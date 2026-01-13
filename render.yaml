@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: tokencap-api
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start --workspace=@tokencap/proxy
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3456
+    healthCheckPath: /health
