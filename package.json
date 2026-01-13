@@ -1,6 +1,9 @@
 {
   "name": "tokencap",
   "version": "0.1.0",
+  "engines": {
+    "node": ">=20"
+  },
   "description": "Know your AI costs before you run",
   "private": true,
   "workspaces": [
