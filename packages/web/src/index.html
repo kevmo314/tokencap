@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tokencap - Know your AI costs before you run. Pre-execution cost prediction and budget enforcement for LLM applications.">
+  <title>Tokencap - Know your AI costs before you run</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a href="#" class="logo">
+        <span class="logo-icon">$</span> tokencap
+      </a>
+      <ul>
+        <li><a href="#problem">Problem</a></li>
+        <li><a href="#solution">Solution</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="https://github.com/kevmo314/tokencap">GitHub</a></li>
+      </ul>
+      <a href="https://github.com/kevmo314/tokencap" class="btn btn-secondary">
+        Get Started
+      </a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Know your AI costs <span class="highlight">before you run</span></h1>
+      <p>Pre-execution cost prediction and budget enforcement for LLM applications. Stop bill shock before it happens.</p>
+      <div class="hero-buttons">
+        <a href="https://github.com/kevmo314/tokencap" class="btn btn-primary">
+          View on GitHub
+        </a>
+        <a href="#solution" class="btn btn-secondary">
+          Learn More
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="problem" id="problem">
+    <section>
+      <h2>The Problem</h2>
+      <p class="subtitle">AI costs are unpredictable and can spiral out of control. Current tools only tell you after the damage is done.</p>
+      <div class="problem-grid">
+        <div class="problem-card">
+          <div class="problem-icon">!</div>
+          <h3>Bill Shock is Common</h3>
+          <p>"$120 OpenAI bill after AutoGPT ran 8 hours unchecked" - Real developer stories from every AI community.</p>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon">X</div>
+          <h3>No Built-in Controls</h3>
+          <p>LangChain, CrewAI, AutoGPT - none of them have built-in cost controls. They leave it entirely to developers.</p>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon">^</div>
+          <h3>Quadratic Cost Growth</h3>
+          <p>Context accumulation in agents compounds every turn. What starts at $0.01 can reach $10 in minutes.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section id="solution">
+    <h2>The Solution</h2>
+    <p class="subtitle">Tokencap predicts costs before execution and enforces budgets automatically. Open source and MIT licensed.</p>
+    <div class="solution-grid">
+      <div class="solution-card">
+        <div class="solution-icon">$</div>
+        <h3>Pre-Execution Prediction</h3>
+        <p>Know exactly what a request will cost before you send it. Exact input costs, output estimates with confidence intervals.</p>
+      </div>
+      <div class="solution-card">
+        <div class="solution-icon">!</div>
+        <h3>Budget Enforcement</h3>
+        <p>Set hard caps per request, session, or project. Automatic termination at limits with graceful degradation options.</p>
+      </div>
+      <div class="solution-card">
+        <div class="solution-icon">&gt;</div>
+        <h3>Agent Chain Support</h3>
+        <p>Track costs across multi-step workflows. Iteration-aware budgets with loop detection and circuit breakers.</p>
+      </div>
+      <div class="solution-card">
+        <div class="solution-icon">#</div>
+        <h3>Real-Time Dashboard</h3>
+        <p>Monitor costs by project, user, or model. Historical trends, alerts, and team-wide visibility.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="code-section">
+    <h2>Simple Integration</h2>
+    <p class="subtitle">Drop-in replacement for your existing OpenAI client. Start tracking costs in minutes.</p>
+    <div class="code-container">
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-dot red"></span>
+          <span class="code-dot yellow"></span>
+          <span class="code-dot green"></span>
+          <span class="code-title">example.ts</span>
+        </div>
+        <div class="code-content">
+<pre><code><span class="code-keyword">import</span> { Tokencap } <span class="code-keyword">from</span> <span class="code-string">'@tokencap/sdk'</span>;
+
+<span class="code-comment">// Initialize with your API key</span>
+<span class="code-keyword">const</span> tokencap = <span class="code-keyword">new</span> <span class="code-function">Tokencap</span>({
+  <span class="code-property">apiKey</span>: process.env.<span class="code-variable">TOKENCAP_API_KEY</span>,
+  <span class="code-property">budget</span>: {
+    <span class="code-property">maxCostPerRequest</span>: <span class="code-number">0.10</span>,  <span class="code-comment">// $0.10 max per request</span>
+    <span class="code-property">maxCostPerSession</span>: <span class="code-number">5.00</span>,  <span class="code-comment">// $5.00 max per session</span>
+  }
+});
+
+<span class="code-comment">// Wrap your OpenAI client</span>
+<span class="code-keyword">const</span> openai = tokencap.<span class="code-function">wrap</span>(
+  <span class="code-keyword">new</span> <span class="code-function">OpenAI</span>({ <span class="code-property">apiKey</span>: process.env.<span class="code-variable">OPENAI_API_KEY</span> })
+);
+
+<span class="code-comment">// Get cost estimate before execution</span>
+<span class="code-keyword">const</span> estimate = <span class="code-keyword">await</span> tokencap.<span class="code-function">estimate</span>({
+  <span class="code-property">model</span>: <span class="code-string">'gpt-4'</span>,
+  <span class="code-property">messages</span>: [{ <span class="code-property">role</span>: <span class="code-string">'user'</span>, <span class="code-property">content</span>: prompt }]
+});
+
+console.<span class="code-function">log</span>(estimate);
+<span class="code-comment">// { inputCost: 0.03, outputCost: { min: 0.02, max: 0.08 }, total: { min: 0.05, max: 0.11 } }</span>
+
+<span class="code-comment">// Execute with automatic budget enforcement</span>
+<span class="code-keyword">const</span> response = <span class="code-keyword">await</span> openai.chat.completions.<span class="code-function">create</span>({
+  <span class="code-property">model</span>: <span class="code-string">'gpt-4'</span>,
+  <span class="code-property">messages</span>: [{ <span class="code-property">role</span>: <span class="code-string">'user'</span>, <span class="code-property">content</span>: prompt }]
+});
+<span class="code-comment">// Automatically tracks cost and enforces budget limits</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <h2>Simple Pricing</h2>
+    <p class="subtitle">Start free, scale as you grow. Open source core with optional hosted dashboard.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Free</h3>
+        <div class="pricing-price">$0 <span>/ month</span></div>
+        <p class="pricing-description">Perfect for side projects and experimentation.</p>
+        <ul class="pricing-features">
+          <li>50,000 requests / month</li>
+          <li>Pre-execution cost estimates</li>
+          <li>Budget enforcement</li>
+          <li>Basic dashboard</li>
+          <li>Community support</li>
+        </ul>
+        <a href="https://github.com/kevmo314/tokencap" class="btn btn-secondary">Get Started</a>
+      </div>
+      <div class="pricing-card featured">
+        <span class="pricing-badge">Popular</span>
+        <h3>Pro</h3>
+        <div class="pricing-price">$29 <span>/ month</span></div>
+        <p class="pricing-description">For growing teams building production AI apps.</p>
+        <ul class="pricing-features">
+          <li>500,000 requests / month</li>
+          <li>5 team seats</li>
+          <li>Agent chain tracking</li>
+          <li>Advanced analytics</li>
+          <li>Email alerts</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="https://github.com/kevmo314/tokencap" class="btn btn-primary">Start Free Trial</a>
+      </div>
+      <div class="pricing-card">
+        <h3>Team</h3>
+        <div class="pricing-price">$99 <span>/ month</span></div>
+        <p class="pricing-description">For teams that need more capacity and control.</p>
+        <ul class="pricing-features">
+          <li>2,000,000 requests / month</li>
+          <li>20 team seats</li>
+          <li>Custom approval workflows</li>
+          <li>SSO integration</li>
+          <li>Audit logs</li>
+          <li>Dedicated support</li>
+        </ul>
+        <a href="mailto:hello@tokencap.dev" class="btn btn-secondary">Contact Sales</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta">
+    <section>
+      <h2>Stop Bill Shock Today</h2>
+      <p>Join developers who are taking control of their AI costs. Open source, MIT licensed, and ready to use.</p>
+      <div class="cta-buttons">
+        <a href="https://github.com/kevmo314/tokencap" class="btn btn-primary">
+          View on GitHub
+        </a>
+        <a href="https://github.com/kevmo314/tokencap#readme" class="btn btn-secondary">
+          Read the Docs
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-links">
+        <a href="https://github.com/kevmo314/tokencap">GitHub</a>
+        <a href="https://github.com/kevmo314/tokencap#readme">Documentation</a>
+        <a href="mailto:hello@tokencap.dev">Contact</a>
+      </div>
+      <p class="footer-copy">
+        &copy; 2026 Tokencap. Open source under MIT License.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
