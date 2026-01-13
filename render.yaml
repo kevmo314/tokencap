@@ -12,3 +12,12 @@ services:
       - key: PORT
         value: 3456
     healthCheckPath: /health
+
+  - type: static
+    name: tokencap-web
+    buildCommand: npm install && npm run build --workspace=@tokencap/web
+    staticPublishPath: packages/web/dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600
