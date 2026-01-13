@@ -1,0 +1,30 @@
+{
+  "name": "tokencap",
+  "version": "0.1.0",
+  "description": "Know your AI costs before you run",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspace=@tokencap/proxy",
+    "test": "npm test --workspaces --if-present"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tokencap/tokencap"
+  },
+  "keywords": [
+    "llm",
+    "ai",
+    "cost",
+    "optimization",
+    "budget",
+    "tokens",
+    "openai",
+    "anthropic"
+  ],
+  "author": "Tokencap",
+  "license": "MIT"
+}
