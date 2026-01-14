@@ -14,17 +14,19 @@ import type {
   CostEstimate,
   ActualCost,
   ProxyConfig,
+  AuthContext,
 } from './types.js';
 import { estimateOpenAICost, estimateAnthropicCost } from './tokenizer.js';
 import { calculateCostByProvider } from './pricing.js';
 import { checkBudget, formatBudgetError, getRemainingBudget } from './budget.js';
-import { recordUsage } from './db.js';
+import { recordUsage, getProjectsByUserId } from './db.js';
+import { checkAndTriggerAlerts } from './alerts.js';
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
 /**
- * Extract project ID from request headers or query params
+ * Extract project ID from request headers, query params, or authenticated user's default project
  */
 export function getProjectId(c: Context, config: ProxyConfig): string {
   // Check header first
@@ -35,7 +37,16 @@ export function getProjectId(c: Context, config: ProxyConfig): string {
   const queryProjectId = c.req.query('project_id');
   if (queryProjectId) return queryProjectId;
 
-  // Use default
+  // Check for authenticated user's default project
+  const auth = c.get('auth') as AuthContext | undefined;
+  if (auth?.user) {
+    const userProjects = getProjectsByUserId(auth.user.id);
+    if (userProjects.length > 0) {
+      return userProjects[0].id; // Use first (most recent) project as default
+    }
+  }
+
+  // Use config default
   return config.defaultProjectId;
 }
 
@@ -194,6 +205,11 @@ export async function proxyOpenAI(
     requestId
   );
 
+  // Check and trigger alerts (non-blocking)
+  checkAndTriggerAlerts(projectId, config).catch(err => {
+    console.error('[Alerts] Error checking alerts:', err);
+  });
+
   // Build response headers
   const headers: Record<string, string> = {};
   addTokencapHeaders(headers, estimate, actual, getRemainingBudget(projectId));
@@ -212,7 +228,7 @@ async function proxyOpenAIStream(
   estimate: CostEstimate,
   projectId: string,
   requestId: string,
-  _config: ProxyConfig
+  config: ProxyConfig
 ): Promise<Response> {
   // Forward request to OpenAI
   let response: Response;
@@ -290,6 +306,11 @@ async function proxyOpenAIStream(
           actualCost.totalCostUsd,
           requestId
         );
+
+        // Check and trigger alerts (non-blocking)
+        checkAndTriggerAlerts(projectId, config).catch(err => {
+          console.error('[Alerts] Error checking alerts:', err);
+        });
 
         controller.close();
       } catch (error) {
@@ -434,6 +455,11 @@ export async function proxyAnthropic(
     requestId
   );
 
+  // Check and trigger alerts (non-blocking)
+  checkAndTriggerAlerts(projectId, config).catch(err => {
+    console.error('[Alerts] Error checking alerts:', err);
+  });
+
   // Build response headers
   const headers: Record<string, string> = {};
   addTokencapHeaders(headers, estimate, actual, getRemainingBudget(projectId));
@@ -452,7 +478,7 @@ async function proxyAnthropicStream(
   estimate: CostEstimate,
   projectId: string,
   requestId: string,
-  _config: ProxyConfig
+  config: ProxyConfig
 ): Promise<Response> {
   // Forward request to Anthropic
   let response: Response;
@@ -535,6 +561,11 @@ async function proxyAnthropicStream(
           actualCost.totalCostUsd,
           requestId
         );
+
+        // Check and trigger alerts (non-blocking)
+        checkAndTriggerAlerts(projectId, config).catch(err => {
+          console.error('[Alerts] Error checking alerts:', err);
+        });
 
         controller.close();
       } catch (error) {

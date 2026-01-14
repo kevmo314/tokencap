@@ -251,4 +251,166 @@ export interface ProxyConfig {
   anthropicApiKey?: string;
   defaultMaxTokens: number;
   defaultProjectId: string;
+  resendApiKey?: string;
+}
+
+// ============================================================================
+// Authentication Types
+// ============================================================================
+
+export type Plan = 'free' | 'pro' | 'team';
+
+export interface User {
+  id: string;
+  email: string;
+  passwordHash: string;
+  plan: Plan;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ApiKey {
+  id: string;
+  userId: string;
+  key: string; // tc_xxxxxxxxxxxx format
+  name: string;
+  lastUsedAt: Date | null;
+  createdAt: Date;
+  revokedAt: Date | null;
+}
+
+export interface Session {
+  id: string;
+  userId: string;
+  token: string;
+  expiresAt: Date;
+  createdAt: Date;
+}
+
+export interface Project {
+  id: string;
+  userId: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PlanLimits {
+  maxRequestsPerMonth: number;
+  maxProjects: number;
+}
+
+export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
+  free: {
+    maxRequestsPerMonth: 50_000,
+    maxProjects: 1,
+  },
+  pro: {
+    maxRequestsPerMonth: 500_000,
+    maxProjects: -1, // unlimited
+  },
+  team: {
+    maxRequestsPerMonth: 2_000_000,
+    maxProjects: -1, // unlimited
+  },
+};
+
+// Auth request/response types
+export interface RegisterRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface CreateApiKeyRequest {
+  name?: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  user?: {
+    id: string;
+    email: string;
+    plan: Plan;
+  };
+  token?: string;
+  message?: string;
+}
+
+export interface ApiKeyResponse {
+  id: string;
+  name: string;
+  key?: string; // Only returned on creation
+  keyPrefix: string; // tc_xxxx... for listing
+  lastUsedAt: string | null;
+  createdAt: string;
+}
+
+// Auth context for authenticated requests
+export interface AuthContext {
+  user: User;
+  apiKey?: ApiKey;
+  session?: Session;
+}
+
+// ============================================================================
+// Alert Types
+// ============================================================================
+
+export type AlertType = 'budget_warning' | 'budget_exceeded' | 'daily_spend_spike';
+
+// Backward compatibility alias
+export type UserPlan = Plan;
+
+export interface Alert {
+  id: string;
+  userId: string;
+  projectId: string;
+  type: AlertType;
+  threshold: number; // percentage for budget_warning, multiplier for daily_spend_spike
+  enabled: boolean;
+  webhookUrl: string | null;
+  email: string | null;
+  lastTriggeredAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AlertHistory {
+  id: number;
+  alertId: string;
+  triggeredAt: Date;
+  details: string; // JSON string with alert details
+}
+
+export interface CreateAlertRequest {
+  projectId: string;
+  type: AlertType;
+  threshold?: number;
+  webhookUrl?: string;
+  email?: string;
+}
+
+export interface UpdateAlertRequest {
+  type?: AlertType;
+  threshold?: number;
+  enabled?: boolean;
+  webhookUrl?: string | null;
+  email?: string | null;
+}
+
+export interface AlertDetails {
+  alertType: AlertType;
+  projectId: string;
+  currentSpendUsd: number;
+  budgetLimitUsd?: number;
+  budgetUtilizationPercent?: number;
+  dailyAverageSpendUsd?: number;
+  todaySpendUsd?: number;
+  triggeredAt: string;
+  message: string;
 }
